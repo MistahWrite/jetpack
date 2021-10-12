@@ -24,6 +24,7 @@ import useSelectSocialMediaConnections from '../../hooks/use-social-media-connec
 import { usePostJustPublished } from '../../hooks/use-saving-post';
 import usePublicizeConfig from '../../hooks/use-publicize-config';
 import useSharePost from '../../hooks/use-share-post';
+import { SharePostRow } from '../share-post';
 
 function getPanelDescription(
 	isPostPublished,
@@ -146,11 +147,8 @@ const PublicizePanel = ( { prePublish } ) => {
 				isRePublicizeFeatureEnabled={ isRePublicizeFeatureEnabled }
 			/>
 			<PublicizeTwitterOptions prePublish={ prePublish } />
-			{ isRePublicizeFeatureEnabled && (
-				<Button isSecondary onClick={ onSharePostHandler }>
-					{ __( 'Share post', 'jetpack' ) }
-				</Button>
-			) }
+
+			<SharePostRow isPublicizeEnabled={ isPublicizeEnabled } />
 		</PanelBody>
 	);
 };
