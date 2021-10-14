@@ -26,9 +26,9 @@ const ConnectScreenWithConnectionStatus = withConnectionStatus( ConnectScreen );
 export default function useConnection() {
 	const APINonce = useSelect( select => select( STORE_ID ).getAPINonce(), [] );
 	const APIRoot = useSelect( select => select( STORE_ID ).getAPIRoot(), [] );
+	const connectedPlugins = useSelect( select => select( STORE_ID ).getConnectedPlugins(), [] );
 	const registrationNonce = useSelect( select => select( STORE_ID ).getRegistrationNonce(), [] );
 	const assetBuildUrl = useSelect( select => select( STORE_ID ).getAssetBuildUrl(), [] );
-
 	const connectionStatus = useSelect( select => select( STORE_ID ).getConnectionStatus(), [] );
 	const { setConnectionStatus } = useDispatch( STORE_ID );
 
@@ -72,6 +72,8 @@ export default function useConnection() {
 				isUserConnected={ connectionStatus.isUserConnected }
 				apiRoot={ APIRoot }
 				apiNonce={ APINonce }
+				currentPlugin="jetpack-backup"
+				connectedPlugins={ connectedPlugins }
 				onDisconnected={ onDisconnectedCallback }
 				redirectUri="admin.php?page=jetpack-backup"
 			/>

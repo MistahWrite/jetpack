@@ -5,6 +5,7 @@
  * @package automattic/jetpack-backup-plugin
  */
 
+use Automattic\Jetpack\Connection\Plugin_Storage as Connection_Plugin_Storage;
 use Automattic\Jetpack\Status;
 
 /**
@@ -27,7 +28,8 @@ class Initial_State {
 				'calypsoSlug' => ( new Status() )->get_site_suffix(),
 			),
 			'assets'        => array(
-				'buildUrl' => plugins_url( 'build/', JETPACK_BACKUP_PLUGIN_ROOT_FILE ),
+				'buildUrl'         => plugins_url( 'build/', JETPACK_BACKUP_PLUGIN_ROOT_FILE ),
+				'connectedPlugins' => Connection_Plugin_Storage::get_all(),
 			),
 		);
 	}
