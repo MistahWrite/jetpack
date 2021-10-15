@@ -3,7 +3,7 @@
  */
 import { InspectorControls } from '@wordpress/block-editor';
 import { __ } from '@wordpress/i18n';
-import { useState } from '@wordpress/element';
+import { useEffect, useState } from '@wordpress/element';
 import {
 	LinkSettingsNavigation,
 	PanelBody,
@@ -18,8 +18,8 @@ import { usePreferredColorSchemeStyle } from '@wordpress/compose';
 import styles from './styles.scss';
 
 const MIN_COLUMNS = 1;
-const MAX_COLUMNS = 2;
-const DEFAULT_COLUMNS = 1;
+const MAX_COLUMNS = 3;
+export const DEFAULT_COLUMNS = 3;
 const MIN_ROUNDED_CORNERS = 0;
 const MAX_ROUNDED_CORNERS = 20;
 const DEFAULT_ROUNDED_CORNERS = 2;
@@ -31,9 +31,14 @@ const TiledGallerySettings = props => {
 	);
 
 	const { setAttributes, linkTo, columns, roundedCorners } = props;
-
 	const [ columnNumber, setColumnNumber ] = useState( columns ?? DEFAULT_COLUMNS );
-	const [ roundedCornerRadius, setRoundedCornerRadius ] = useState( roundedCorners ?? DEFAULT_ROUNDED_CORNERS );
+	useEffect( () => {
+		setColumnNumber( columns );
+	}, [ columns ] );
+
+	const [ roundedCornerRadius, setRoundedCornerRadius ] = useState(
+		roundedCorners ?? DEFAULT_ROUNDED_CORNERS
+	);
 	const [ linkToURL, setLinkToURL ] = useState( linkTo ?? '' );
 
 	const linkSettingsOptions = {
@@ -56,7 +61,7 @@ const TiledGallerySettings = props => {
 					value={ columnNumber }
 					onChange={ value => {
 						setColumnNumber( value );
-						setAttributes( { columns: value });
+						setAttributes( { columns: value } );
 					} }
 				/>
 			</PanelBody>
@@ -68,7 +73,7 @@ const TiledGallerySettings = props => {
 					value={ roundedCornerRadius }
 					onChange={ value => {
 						setRoundedCornerRadius( value );
-						setAttributes( { roundedCorners: value });
+						setAttributes( { roundedCorners: value } );
 					} }
 				/>
 			</PanelBody>

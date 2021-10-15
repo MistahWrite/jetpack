@@ -26,10 +26,9 @@ import { useResizeObserver } from '@wordpress/compose';
 import { ALLOWED_MEDIA_TYPES } from './constants';
 import { icon } from '.';
 import styles from './styles.scss';
-import TiledGallerySettings from './settings';
+import TiledGallerySettings, { DEFAULT_COLUMNS } from './settings';
 
 const TILE_SPACING = 8;
-const DEFAULT_COLUMNS = 1;
 
 export function defaultColumnsNumber( images ) {
 	return Math.min( 3, images.length );
@@ -58,8 +57,6 @@ const TiledGalleryEdit = props => {
 			if ( columns ) {
 				const columnWidths = new Array( columns ).fill( Math.floor( width / columns ) );
 				setAttributes( { columnWidths: [ columnWidths ] } );
-			} else {
-				setAttributes( { columnWidths: [] } );
 			}
 		}
 	}, [ sizes, columns ] );
@@ -97,7 +94,8 @@ const TiledGalleryEdit = props => {
 
 	useEffect( () => {
 		if ( ! columns ) {
-			setAttributes( { columns: DEFAULT_COLUMNS } );
+			const col = Math.min( images.length, DEFAULT_COLUMNS );
+			setAttributes( { columns: Math.max( col, 1 ) } );
 		}
 	}, [ images ] );
 
@@ -125,12 +123,12 @@ const TiledGalleryEdit = props => {
 			allowedBlocks: [ 'core/image' ],
 			orientation: 'horizontal',
 			renderAppender: false,
-			numColumns: 3,
+			numColumns: columns,
 			marginHorizontal: TILE_SPACING,
 			marginVertical: TILE_SPACING,
 			__experimentalLayout: { type: 'default', alignments: [] },
 			gridProperties: {
-				numColumns: 3,
+				numColumns: columns,
 			},
 			parentWidth: maxWidth + 2 * TILE_SPACING,
 		}
