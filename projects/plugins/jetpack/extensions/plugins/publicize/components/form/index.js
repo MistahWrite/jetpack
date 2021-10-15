@@ -9,7 +9,7 @@
 /**
  * External dependencies
  */
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 /**
  * WordPress dependencies
@@ -31,20 +31,26 @@ export default function PublicizeForm( { isPublicizeEnabled, isRePublicizeFeatur
 	const { connections, toggleById, hasConnections } = useSocialMediaConnections();
 =======
 export default function PublicizeForm() {
+<<<<<<< HEAD
 	const { connections, toggleById, refresh } = useSocialMediaConnections();
 >>>>>>> d28ddc734c ([not verified] Refresh connections on change)
+=======
+	const { connections, toggleById } = useSocialMediaConnections();
+>>>>>>> eca1ee6b47 ([not verified] Trigger state change when connections change)
 	const { message, updateMessage, maxLength } = useSocialMediaMessage();
+	const [ activeConnections, setActiveConnections ] = useState( {} );
 
 	function isDisabled() {
 		return connections.every( connection => ! connection.toggleable );
 	}
 
 	useEffect( () => {
-		refresh();
-	}, [ connections, refresh ] );
+		setActiveConnections( connections );
+	}, [ connections ] );
 
 	return (
 		<Fragment>
+<<<<<<< HEAD
 			{ hasConnections && (
 				<PanelRow>
 					<ul className="jetpack-publicize__connections-list">
@@ -52,6 +58,15 @@ export default function PublicizeForm() {
 							( { display_name, enabled, id, service_name, toggleable, profile_picture } ) => (
 								<PublicizeConnection
 									disabled={ isRePublicizeFeatureEnabled ? ! isPublicizeEnabled : ! toggleable }
+=======
+			<PanelRow>
+				<ul className="jetpack-publicize__connections-list">
+					{ activeConnections.length > 0 &&
+						activeConnections.map(
+							( { display_name, enabled, id, service_name, toggleable, profile_picture } ) => (
+								<PublicizeConnection
+									disabled={ ! toggleable }
+>>>>>>> eca1ee6b47 ([not verified] Trigger state change when connections change)
 									enabled={ enabled }
 									key={ id }
 									id={ id }
@@ -62,9 +77,14 @@ export default function PublicizeForm() {
 								/>
 							)
 						) }
+<<<<<<< HEAD
 					</ul>
 				</PanelRow>
 			) }
+=======
+				</ul>
+			</PanelRow>
+>>>>>>> eca1ee6b47 ([not verified] Trigger state change when connections change)
 
 			<PublicizeSettingsButton />
 
