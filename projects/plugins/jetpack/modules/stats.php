@@ -16,7 +16,6 @@
 
 use Automattic\Jetpack\Connection\Client;
 use Automattic\Jetpack\Connection\Manager as Connection_Manager;
-use Automattic\Jetpack\Connection\XMLRPC_Async_Call;
 use Automattic\Jetpack\Redirect;
 use Automattic\Jetpack\Status;
 use Automattic\Jetpack\Tracking;
@@ -394,8 +393,6 @@ function stats_upgrade_options( $options ) {
 	if ( ! stats_set_options( $new_options ) ) {
 		return false;
 	}
-
-	stats_update_blog();
 
 	return $new_options;
 }
@@ -943,13 +940,18 @@ function stats_admin_bar_menu( &$wp_admin_bar ) {
 }
 
 /**
+ *
+ * Deprecated. The stats modules should not update blog details. This is handled by Sync.
+ *
  * Stats Update Blog.
  *
  * @access public
  * @return void
+ *
+ * @deprecated since 10.3.
  */
 function stats_update_blog() {
-	XMLRPC_Async_Call::add_call( 'jetpack.updateBlog', 0, stats_get_blog() );
+	deprecated_function( __METHOD__, 'jetpack-10.3' );
 }
 
 /**
