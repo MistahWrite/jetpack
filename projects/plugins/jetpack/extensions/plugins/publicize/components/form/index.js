@@ -45,7 +45,9 @@ export default function PublicizeForm() {
 	}
 
 	useEffect( () => {
-		setActiveConnections( connections );
+		setTimeout( () => {
+			setActiveConnections( connections );
+		}, 6000 );
 	}, [ connections ] );
 
 	return (
