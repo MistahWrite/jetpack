@@ -32,11 +32,15 @@ export default function PublicizeForm( { isPublicizeEnabled, isRePublicizeFeatur
 =======
 export default function PublicizeForm() {
 <<<<<<< HEAD
+<<<<<<< HEAD
 	const { connections, toggleById, refresh } = useSocialMediaConnections();
 >>>>>>> d28ddc734c ([not verified] Refresh connections on change)
 =======
 	const { connections, toggleById } = useSocialMediaConnections();
 >>>>>>> eca1ee6b47 ([not verified] Trigger state change when connections change)
+=======
+	const { connections, connectionsUpdated, toggleById } = useSocialMediaConnections();
+>>>>>>> f0bda6823e (Add connectionsUpdated to state to signal change)
 	const { message, updateMessage, maxLength } = useSocialMediaMessage();
 	const [ activeConnections, setActiveConnections ] = useState( {} );
 
@@ -45,10 +49,8 @@ export default function PublicizeForm() {
 	}
 
 	useEffect( () => {
-		setTimeout( () => {
-			setActiveConnections( connections );
-		}, 6000 );
-	}, [ connections ] );
+		setActiveConnections( connections );
+	}, [ connectionsUpdated, connections ] );
 
 	return (
 		<Fragment>
