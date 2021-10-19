@@ -10,7 +10,7 @@
  * WordPress dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { PanelBody, PanelRow, ToggleControl, Button } from '@wordpress/components';
+import { PanelBody, PanelRow, ToggleControl } from '@wordpress/components';
 import { store as editorStore } from '@wordpress/editor';
 import { useSelect } from '@wordpress/data';
 
@@ -23,7 +23,6 @@ import PublicizeTwitterOptions from '../twitter/options';
 import useSelectSocialMediaConnections from '../../hooks/use-social-media-connections';
 import { usePostJustPublished } from '../../hooks/use-saving-post';
 import usePublicizeConfig from '../../hooks/use-publicize-config';
-import useSharePost from '../../hooks/use-share-post';
 import { SharePostRow } from '../share-post';
 
 function getPanelDescription(
@@ -98,21 +97,6 @@ const PublicizePanel = ( { prePublish } ) => {
 		},
 		[ hasEnabledConnections, refresh ]
 	);
-
-	// Testing post sharing function handler.
-	// @TODO: replace with the final implementation
-	const { isFetching, onSharePostHandler } = useSharePost( function ( error, results ) {
-		if ( error ) {
-			// eslint-disable-next-line no-console
-			return console.log( { error } );
-		}
-
-		// eslint-disable-next-line no-console
-		console.log( 'results: ', { results } );
-	} );
-
-	// eslint-disable-next-line no-console
-	console.log( 'isFetching: ', isFetching );
 
 	return (
 		<PanelBody title={ __( 'Share this post', 'jetpack' ) }>
