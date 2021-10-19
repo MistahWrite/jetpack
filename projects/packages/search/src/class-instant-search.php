@@ -6,14 +6,18 @@
  * @package automattic/jetpack
  */
 
+namespace Automattic\Jetpack\Search;
+
 use Automattic\Jetpack\Search;
+use Jetpack_WPES_Query_Builder;
+use WP_Error;
 
 /**
  * Class to load Instant Search experience on the site.
  *
  * @since 8.3.0
  */
-class Jetpack_Instant_Search extends Jetpack_Search {
+class Instant_Search extends Classic_Search {
 	/**
 	 * The name of instant search sidebar
 	 *
@@ -21,7 +25,7 @@ class Jetpack_Instant_Search extends Jetpack_Search {
 	 *
 	 * @var string
 	 */
-	const JETPACK_INSTANT_SEARCH_SIDEBAR = 'jetpack-instant-search-sidebar';
+	const INSTANT_SEARCH_SIDEBAR = 'jetpack-instant-search-sidebar';
 
 	/**
 	 * Variable to save old sidebars_widgets value.
@@ -34,41 +38,6 @@ class Jetpack_Instant_Search extends Jetpack_Search {
 	 * @var array
 	 */
 	protected $old_sidebars_widgets;
-
-	/**
-	 * Get singleton instance of Jetpack Instant Search.
-	 *
-	 * Instantiates and sets up a new instance if needed, or returns the singleton.
-	 *
-	 * @since 9.8.0
-	 *
-	 * @return Jetpack_Instant_Search The Jetpack_Instant_Search singleton.
-	 */
-	public static function instance() {
-		if ( ! isset( self::$instance ) ) {
-			self::$instance = new static();
-			self::$instance->setup();
-		}
-
-		return self::$instance;
-	}
-
-	/**
-	 * Loads the php for this version of search
-	 *
-	 * @since 8.3.0
-	 */
-	public function load_php() {
-		$this->base_load_php();
-
-		require_once __DIR__ . '/class-jetpack-search-settings.php';
-		new Jetpack_Search_Settings();
-
-		if ( class_exists( 'WP_Customize_Manager' ) ) {
-			require_once __DIR__ . '/class-jetpack-search-customize.php';
-			new Jetpack_Search_Customize();
-		}
-	}
 
 	/**
 	 * Setup the various hooks needed for the plugin to take over search duties.
@@ -588,8 +557,9 @@ class Jetpack_Instant_Search extends Jetpack_Search {
 			return false;
 		}
 
+		// TODO: Replace Jetpack:: invocation.
 		// Check if WooCommerce plugin is active (based on https://docs.woocommerce.com/document/create-a-plugin/).
-		if ( ! in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', Jetpack::get_active_plugins() ), true ) ) {
+		if ( ! in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', \Jetpack::get_active_plugins() ), true ) ) {
 			return false;
 		}
 
@@ -626,18 +596,18 @@ class Jetpack_Instant_Search extends Jetpack_Search {
 			empty( $this->old_sidebars_widgets )
 			|| ! is_array( $this->old_sidebars_widgets )
 			|| ! is_array( $sidebars_widgets )
-			|| ! array_key_exists( static::JETPACK_INSTANT_SEARCH_SIDEBAR, $sidebars_widgets )
-			|| ! array_key_exists( static::JETPACK_INSTANT_SEARCH_SIDEBAR, $this->old_sidebars_widgets )
+			|| ! array_key_exists( static::INSTANT_SEARCH_SIDEBAR, $sidebars_widgets )
+			|| ! array_key_exists( static::INSTANT_SEARCH_SIDEBAR, $this->old_sidebars_widgets )
 			// If the new Jetpack sidebar already has fewer widgets, skip execution.
 			// Uses less than comparison for defensive programming.
-			|| count( $sidebars_widgets[ static::JETPACK_INSTANT_SEARCH_SIDEBAR ] ) <= count( $this->old_sidebars_widgets[ static::JETPACK_INSTANT_SEARCH_SIDEBAR ] )
+			|| count( $sidebars_widgets[ static::INSTANT_SEARCH_SIDEBAR ] ) <= count( $this->old_sidebars_widgets[ static::INSTANT_SEARCH_SIDEBAR ] )
 		) {
 			return $sidebars_widgets;
 		}
 
-		$lost_widgets                            = array_diff( $sidebars_widgets[ static::JETPACK_INSTANT_SEARCH_SIDEBAR ], $this->old_sidebars_widgets[ static::JETPACK_INSTANT_SEARCH_SIDEBAR ] );
-		$sidebars_widgets['wp_inactive_widgets'] = array_merge( $lost_widgets, (array) $sidebars_widgets['wp_inactive_widgets'] );
-		$sidebars_widgets[ static::JETPACK_INSTANT_SEARCH_SIDEBAR ] = $this->old_sidebars_widgets[ static::JETPACK_INSTANT_SEARCH_SIDEBAR ];
+		$lost_widgets                                       = array_diff( $sidebars_widgets[ static::INSTANT_SEARCH_SIDEBAR ], $this->old_sidebars_widgets[ static::INSTANT_SEARCH_SIDEBAR ] );
+		$sidebars_widgets['wp_inactive_widgets']            = array_merge( $lost_widgets, (array) $sidebars_widgets['wp_inactive_widgets'] );
+		$sidebars_widgets[ static::INSTANT_SEARCH_SIDEBAR ] = $this->old_sidebars_widgets[ static::INSTANT_SEARCH_SIDEBAR ];
 
 		// Reset $this->old_sidebars_widgets because we want to run the function only once after theme switch.
 		$this->old_sidebars_widgets = null;

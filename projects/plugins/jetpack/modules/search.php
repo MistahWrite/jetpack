@@ -14,9 +14,7 @@
  * @package automattic/jetpack
  */
 
-// Include everything.
-require_once __DIR__ . '/search/class.jetpack-search.php';
 require_once __DIR__ . '/search/class-jetpack-search-customberg.php';
 
-Jetpack_Search::instance();
+new Automattic\Jetpack\Search\Jetpack_Initializer();
 Automattic\Jetpack\Search\Jetpack_Search_Customberg::instance();

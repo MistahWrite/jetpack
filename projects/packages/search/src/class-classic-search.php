@@ -1,22 +1,33 @@
-<?php // phpcs:ignore WordPress.Files.FileName.InvalidClassFileName
-
+<?php
 /**
- * Jetpack Search: Main Jetpack_Search class
+ * Classic Search: The legacy search experience.
  *
- * @package    Jetpack
- * @subpackage Jetpack Search
- * @since      5.0.0
+ * @package    @automattic/jetpack-search
  */
+
+namespace Automattic\Jetpack\Search;
 
 use Automattic\Jetpack\Connection\Client;
 use Automattic\Jetpack\Search\Helper as Jetpack_Search_Helpers;
+// TODO: Replace usage of WPES libraries here by migrating them to the package.
+use Jetpack_WPES_Query_Builder;
+use Jetpack_WPES_Search_Query_Parser;
+use WP_Error;
+use WP_Query;
+use WP_Tax_Query;
 
 /**
- * The main class for the Jetpack Search module.
- *
- * @since 5.0.0
+ * The legacy search experience that's used when instant search is disabled.
  */
-class Jetpack_Search {
+class Classic_Search {
+	/**
+	 * The singleton instance of this class.
+	 *
+	 * @since 5.0.0
+	 *
+	 * @var Jetpack_Search
+	 */
+	protected static $instance;
 
 	/**
 	 * The number of found posts.
@@ -82,15 +93,6 @@ class Jetpack_Search {
 	protected $last_query_failure_info = array();
 
 	/**
-	 * The singleton instance of this class.
-	 *
-	 * @since 5.0.0
-	 *
-	 * @var Jetpack_Search
-	 */
-	protected static $instance;
-
-	/**
 	 * Languages with custom analyzers. Other languages are supported, but are analyzed with the default analyzer.
 	 *
 	 * @since 5.0.0
@@ -100,13 +102,53 @@ class Jetpack_Search {
 	public static $analyzed_langs = array( 'ar', 'bg', 'ca', 'cs', 'da', 'de', 'el', 'en', 'es', 'eu', 'fa', 'fi', 'fr', 'he', 'hi', 'hu', 'hy', 'id', 'it', 'ja', 'ko', 'nl', 'no', 'pt', 'ro', 'ru', 'sv', 'tr', 'zh' );
 
 	/**
-	 * Jetpack_Search constructor.
-	 *
-	 * @since 5.0.0
-	 *
-	 * Doesn't do anything. This class needs to be initialized via the instance() method instead.
+	 * The constructor is not used for this singleton class.
 	 */
 	protected function __construct() {
+	}
+
+	/**
+	 * Returns the singleton of the class. Instantiates and sets up a singleton instance if necessary.
+	 *
+	 * @return static The class singleton.
+	 */
+	public static function instance() {
+		if ( ! isset( self::$instance ) ) {
+			self::$instance = new static();
+			self::$instance->setup();
+		}
+
+		return self::$instance;
+	}
+
+	/**
+	 * Performs setup tasks for the singleton. To be used exclusively after singleton instantitaion.
+	 */
+	public function setup() {
+		// TODO: Replace Jetpack:: invocation.
+		if ( ! \Jetpack::is_connection_ready() || ! $this->is_search_supported() ) {
+			/**
+			 * Fires when the Jetpack Search fails and would fallback to MySQL.
+			 *
+			 * @module search
+			 * @since 7.9.0
+			 *
+			 * @param string $reason Reason for Search fallback.
+			 * @param mixed  $data   Data associated with the request, such as attempted search parameters.
+			 */
+			do_action( 'jetpack_search_abort', 'inactive', null );
+			return;
+		}
+
+		// TODO: Replace Jetpack:: invocation.
+		$this->jetpack_blog_id = \Jetpack::get_option( 'id' );
+
+		if ( ! $this->jetpack_blog_id ) {
+			do_action( 'jetpack_search_abort', 'no_blog_id', null );
+			return;
+		}
+
+		$this->init_hooks();
 	}
 
 	/**
@@ -125,81 +167,6 @@ class Jetpack_Search {
 	 */
 	public function __wakeup() {
 		wp_die( "Please don't __wakeup Jetpack_Search" );
-	}
-
-	/**
-	 * Get singleton instance of Jetpack_Search.
-	 *
-	 * Instantiates and sets up a new instance if needed, or returns the singleton.
-	 *
-	 * @since 5.0.0
-	 *
-	 * @return Jetpack_Search The Jetpack_Search singleton.
-	 */
-	public static function instance() {
-		if ( ! isset( self::$instance ) ) {
-			if ( Automattic\Jetpack\Search\Options::is_instant_enabled() ) {
-				require_once __DIR__ . '/class-jetpack-instant-search.php';
-				self::$instance = new Jetpack_Instant_Search();
-			} else {
-				self::$instance = new Jetpack_Search();
-			}
-
-			self::$instance->setup();
-		}
-
-		return self::$instance;
-	}
-
-	/**
-	 * Perform various setup tasks for the class.
-	 *
-	 * Checks various pre-requisites and adds hooks.
-	 *
-	 * @since 5.0.0
-	 */
-	public function setup() {
-		if ( ! Jetpack::is_connection_ready() || ! $this->is_search_supported() ) {
-			/**
-			 * Fires when the Jetpack Search fails and would fallback to MySQL.
-			 *
-			 * @module search
-			 * @since 7.9.0
-			 *
-			 * @param string $reason Reason for Search fallback.
-			 * @param mixed  $data   Data associated with the request, such as attempted search parameters.
-			 */
-			do_action( 'jetpack_search_abort', 'inactive', null );
-			return;
-		}
-
-		$this->jetpack_blog_id = Jetpack::get_option( 'id' );
-
-		if ( ! $this->jetpack_blog_id ) {
-			/** This action is documented in modules/search/class.jetpack-search.php */
-			do_action( 'jetpack_search_abort', 'no_blog_id', null );
-			return;
-		}
-
-		$this->load_php();
-		$this->init_hooks();
-	}
-
-	/**
-	 * Loads the php for this version of search
-	 *
-	 * @since 8.3.0
-	 */
-	public function load_php() {
-		$this->base_load_php();
-	}
-
-	/**
-	 * Loads the PHP common to all search. Should be called from extending classes.
-	 */
-	protected function base_load_php() {
-		require_once __DIR__ . '/class.jetpack-search-template-tags.php';
-		require_once JETPACK__PLUGIN_DIR . 'modules/widgets/search.php';
 	}
 
 	/**
@@ -233,8 +200,9 @@ class Jetpack_Search {
 	 * Loads scripts for Tracks analytics library
 	 */
 	public function is_search_supported() {
+		// TODO: Replace Jetpack_Plan:: invocation.
 		if ( method_exists( 'Jetpack_Plan', 'supports' ) ) {
-			return Jetpack_Plan::supports( 'search' );
+			return \Jetpack_Plan::supports( 'search' );
 		}
 		return false;
 	}
@@ -1909,7 +1877,7 @@ class Jetpack_Search {
 			return;
 		}
 
-		$tracking = new Automattic\Jetpack\Tracking();
+		$tracking = new \Automattic\Jetpack\Tracking();
 		$tracking->tracks_record_event(
 			wp_get_current_user(),
 			sprintf( 'jetpack_search_widget_%s', $event['action'] ),
