@@ -941,7 +941,7 @@ function stats_admin_bar_menu( &$wp_admin_bar ) {
 
 /**
  *
- * Deprecated. The stats modules should not update blog details. This is handled by Sync.
+ * Deprecated. The stats module should not update blog details. This is handled by Sync.
  *
  * Stats Update Blog.
  *
